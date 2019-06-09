@@ -1,0 +1,63 @@
+---
+title: "Vignette Title"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Using the `XCHR::eurusds` and `XCHR::eur`functions with the `binancer` package the demo will fetch the daily volume of Bitcoins sold for "USDT" from the Binance API and reporting the overall value of this asset in EUR for the past 45 days. 
+
+There also will be a nice plot at the end :)
+
+```{r bitcoin}
+library(binancer)
+library(data.table)
+
+coin_prices <- binance_klines('BTCUSDT',
+                              interval = '1d', 
+                              limit = 45
+                              )
+
+balance <- coin_prices[, .(date = as.Date(close_time), 
+                           btcusd = close, 
+                           volume_usd = volume)
+                       ]
+```
+
+Let's calculate the value of the assets in EUR using the `XCHR::eurusds` function.
+We use the rolling join for merging the exchange rates and bitcoin volume. 
+
+```{r EUR prices}
+library(XCHR)
+
+rate <- eurusds(Sys.Date() - 45, Sys.Date())
+setkey(balance, date)
+setkey(rate, date)
+
+balance <- rate[balance, roll = TRUE]
+balance[, volume_eur := volume_usd * btcusd * eurusd,]
+
+```
+As the last step using the `XCHR::eur` function and `ggplot2::ggplot` we visualize the asset value in EUR for the past 45 days in EUR format.
+
+```{r format+visual }
+library(ggplot2)
+
+ggplot(data = balance, aes(x = date, y = volume_eur)) +
+  geom_line(color = 'pink', size = 3) +
+  geom_smooth(se=FALSE) +
+  scale_y_continuous(labels = eur) +
+  theme_bw() +
+  labs(title = 'Total BTC asset value in the last 45 days', x = 'day', y = 'EUR value')
+```

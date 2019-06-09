@@ -4,13 +4,12 @@
 #' @param decimals number of decimals to show
 #' @export
 #' @return integer
-#' @import httr
-#'
-#' @import lubridate
-#' @import logger
-#' @import data.table
-#'
-
+#' @importFrom httr GET
+#' @importFrom httr content
+#' @importFrom data.table data.table
+#' @importFrom data.table setkey
+#' @importFrom lubridate ymd
+#' @importFrom logger log_info
 #' @examples
 #' eurusds('2019-06-01', '2019-06-08')
 
