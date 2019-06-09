@@ -4,15 +4,12 @@
 #' @return integer
 #' @importFrom httr GET
 #' @importFrom httr content
-#' @importFrom data.table data.table
-#' @importFrom data.table setkey
-#' @importFrom lubridate ymd
-#' @importFrom logger log_info
 #' @examples
 #' eurusd()
 #' eurusd(1000)
 
 eurusd <- function(decimals = 5){
-  response <- GET('https://api.exchangeratesapi.io/latest?base=USD')
-  exchange_rates <- content(response)
+  api_response <- GET('https://api.exchangeratesapi.io/latest?base=USD')
+  exchange_rates <- content(api_response)
   round(exchange_rates$rates$EUR, decimals)
+}
